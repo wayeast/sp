@@ -29,10 +29,11 @@ class SP_Text(Persistent):
         self.name = path
         with open(self._name, 'r') as f:
             text = f.read()
-            self._tokens = [tok for sent in nltk.sent_tokenize(text)
-                                for tok  in nltk.word_tokenize(sent)
-                            ]
-        self._tagged = nltk.pos_tag(self._tokens)
+            self._text = nltk.Text([tok for sent in nltk.sent_tokenize(text)
+                                        for tok  in nltk.word_tokenize(sent)
+                                   ],
+                                   name=self.name)
+        self._tagged = nltk.pos_tag(self._text.tokens)
 
     def close_nouns(self, words, width=15, arg_dict=None):
         """Build dictionary of noun : count items for nouns in proximity of
@@ -75,9 +76,9 @@ class SP_Text(Persistent):
     def close_adjectives(self, words, width=15, arg_dict=None):
         """Build dictionary of adjective : count items for adjectives in
         proximity of word.  May take defaultdict pointer arg_dict as
-        optional argument, in which case close_adjectives adds to what is already
-        there.  Return new dictionary if no arg_dict, else number of distinct
-        close adjectives found.
+        optional argument, in which case close_adjectives adds to what
+        is already there.  Return new dictionary if no arg_dict, else
+        number of distinct close adjectives found.
         """
         workspace = defaultdict(int) if arg_dict is None else arg_dict
         pos_tups  = self._tagged
@@ -94,14 +95,21 @@ class SP_Text(Persistent):
  # look at NLTK code to see what these functions do and how to aggregate
  # their results
     def concordance(self, word, width=80, lines=25):
-        pass
+        self._text.concordance(word, width, lines)
+
     def collocations(self, num=20, window=2):
-        pass
+        self._text.collocations(num, window)
+
     def count(self, word):
-        pass
+        return self._text.count(word)
+
     def similar(self, word, num=20):
-        pass
+        self._text.similar(word, num)
+
     def common_contexts(self, word, num=20):
-        pass
+        self._text.common_contexts(word, num)
+
     def findall(self, regexp):
-        pass
+        self._text.findall(regexp)
+
+
