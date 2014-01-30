@@ -17,7 +17,7 @@ class SP_Session(object):
         self._storage = FileStorage.FileStorage(self._path)
         self._db = DB(self._storage)
         self._conn = self._db.open()
-        self._dbroot = self._conn.root()
+        self._texts = self._conn.root()
 
     def close(self, save=False):
         self._conn.close()
@@ -30,10 +30,10 @@ class SP_Session(object):
 
     @property
     def index(self):
-        return self._dbroot.keys()
+        return self._texts.keys()
 
     def read_data(self, path):
-        db = self._dbroot
+        db = self._texts
         for dirpath, dirs, files in os.walk(path):
             # this should yield unique names for articles contained
             # on single filesystem.  Should thought be given to possible
@@ -53,17 +53,27 @@ class SP_Session(object):
 # as argument
     def close_nouns(self, words, width=15):
         ret = defaultdict(int)
-        texts = self._dbroot.values()
+        texts = self._texts.values()
         for text in texts:
             text.close_nouns(words, width, ret)
         return ret
 
     def close_verbs(self, word, width=15):
-        pass
+        pass  # test close_nouns before translating to here
     def close_adjectives(self, word, width=15):
-        pass
+        pass  # test close_nouns before translating to here
+
     def concordance(self, word, width=80, lines=25):
-        pass
+        ret = dict()
+        for t in self.index:
+            text = self._texts[t]
+            if '_concordance_index' not in text.__dict__:
+                text._concordance_index = nltk.ConcordanceIndex(
+                        text.tokens, key=lambda w : w.lower())
+            ret[t] = text._concordance_index
+        # TODO: still need to find a user-friendly way to print or
+        # write to file
+
     def collocations(self, num=20, window=2):
         pass
     def count(self, word):
